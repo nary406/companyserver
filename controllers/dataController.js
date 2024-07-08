@@ -255,27 +255,24 @@ const postDB = async (req, res, next) => {
         if (mail) {
             const databaseRef = ref(db, `data/${mail}/latestValues`);
             const snapshot = await get(databaseRef);
-            var curr = new Date(new Date());
+            var curr = new Date();
             curr.setDate(curr.getDate());
             const dateOrg = curr.toISOString().substring(0, 10);
             const caldate = dateOrg;
-            const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
-            let currentTimestampVal;
-            let timestamp24HoursAgo;
-            if (caldate) {
-                currentTimestampVal = Math.floor(Date.now() / 1000);
-            }
-            timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
+            const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800; // UTC+5:30 offset
+
+            let currentTimestampVal = Math.floor(Date.now() / 1000);
+            let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
+
             const dataRef = ref(db, `data/${mail}/timestamp`);
             const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
-
             const snapshots = await get(queryRef);
 
             const records = [];
             let k = 0;
             snapshots.forEach((childSnapshot) => {
                 if (mail === "ftb001" && childSnapshot.key > 1663660000) {
-                    k = 5400;
+                    k = 5400; // UTC+1:30 offset
                 }
                 if (childSnapshot.key > uniValue - k && childSnapshot.key < uniValue + 86400 - k) {
                     records.push(childSnapshot);
@@ -318,12 +315,12 @@ const postDB = async (req, res, next) => {
                 const dateForCalculation = new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(t);
                 const currentTime = Number(dateForCalculation);
                 let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === "24"){
+                if (dateForGraph.split(':')[0] === "24") {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
-                }
-                else{
+                } else {
                     dateForGraphVal = dateForGraph;
                 }
+
                 const solarPower = value.val().solarVoltage * value.val().solarCurrent;
                 const gridPower = value.val().gridVoltage * value.val().gridCurrent;
                 const inverterPower = value.val().inverterVoltage * value.val().inverterCurrent;
@@ -429,18 +426,18 @@ const postDB = async (req, res, next) => {
             p1ValueTot = (p1ValueTot / 1000).toFixed(2);
             p2ValueTot = (p2ValueTot / 1000).toFixed(2);
             p3ValueTot = (p3ValueTot / 1000).toFixed(2);
+
             res.status(200).json({ message: 'Data processed successfully', data: { caldate, snapshot, dataCharts, p1ValueTot, p2ValueTot, p3ValueTot } });
-        }
-        else {
+        } else {
             res.status(400);
-            next({ message: "value is empty" });;
+            next({ message: "value is empty" });
         }
     } catch (error) {
         res.status(500);
         next(error);
     }
+};
 
-}
 
 
 
