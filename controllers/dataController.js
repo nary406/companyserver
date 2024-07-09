@@ -157,7 +157,7 @@ const getDate = async (req, res, next) => {
                 if (timestamp > 1663660000 && mail === "ftb001") {
                     timeVal = 5400 - 230;
                 }
-                const t = new Date((timestamp + timeVal) * 1000);
+                const t = new Date((timestamp + timeVal + 19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
                 if(dateForGraph.split(':')[0] === 24){
