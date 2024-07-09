@@ -311,9 +311,9 @@ const postDB = async (req, res, next) => {
                 const value = snapshot.val();
                 const timestamp = Number(snapshot.key);
                 let timeVal = 0;
-                if (timestamp > 1663660000 && mail === "ftb001") {
-                    timeVal = 5400 - 230;
-                }
+                // if (timestamp > 1663660000 && mail === "ftb001") {
+                //     timeVal = 5400 - 230;
+                // }
                 const t = new Date((timestamp + timeVal-19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
