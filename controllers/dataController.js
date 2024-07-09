@@ -256,16 +256,20 @@ const postDB = async (req, res, next) => {
             const databaseRef = ref(db, `data/${mail}/latestValues`);
             const snapshot = await get(databaseRef);
 
-            const currentUTCDate = new Date();
-            const currentISTDate = new Date(currentUTCDate.getTime());
-            const dateOrg = currentISTDate.toISOString().substring(0, 10);
+            // Convert GMT time to IST
+            var curr = new Date();
+            const ISTOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+            curr = new Date(curr.getTime() + ISTOffset);
+            curr.setDate(curr.getDate());
+            const dateOrg = curr.toISOString().substring(0, 10);
             const caldate = dateOrg;
-            const uniValue = Math.floor(new Date(caldate).getTime() / 1000);
-
-            // Calculate the current timestamp in IST
-            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000) + 19800;
-            let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
-
+            const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
+            let currentTimestampVal;
+            let timestamp24HoursAgo;
+            if (caldate) {
+                currentTimestampVal = Math.floor(Date.now() / 1000);
+            }
+            timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
             const dataRef = ref(db, `data/${mail}/timestamp`);
             const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
 
@@ -307,39 +311,88 @@ const postDB = async (req, res, next) => {
             const myArray12 = [];
             let iterVal = 0;
 
-            const dataCharts = records.map((snapshot) => {
-                const value = snapshot.val();
-                const timestamp = Number(snapshot.key);
+            const dataCharts = Object.entries(records).map(([key, value]) => {
+                const timestamp = Number(value.key);
                 let timeVal = 0;
-                // if (timestamp > 1663660000 && mail === "ftb001") {
-                //     timeVal = 5400 - 230;
-                // }
-                const t = new Date((timestamp + timeVal-19800) * 1000);
+                if (timestamp > 1663660000 && mail === "ftb001") {
+                    timeVal = 5400 - 230;
+                }
+                const t = new Date((timestamp + timeVal) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if (dateForGraph.split(':')[0] === "24") {
+                if(dateForGraph.split(':')[0] === 24){
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
-                } else {
+                }
+                else{
                     dateForGraphVal = dateForGraph;
                 }
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
-                    myArray1.push(Math.abs(value.solarVoltage));
-                    myArray2.push(Math.abs(value.solarCurrent));
-                    myArray3.push(Math.abs(value.solarVoltage * value.solarCurrent));
+                    myArray1.push(Math.abs(value.val().solarVoltage));
+                    myArray2.push(Math.abs(value.val().solarCurrent));
+                    myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent));
 
-                    myArray4.push(Math.abs(value.inverterVoltage));
-                    myArray5.push(Math.abs(value.inverterCurrent));
-                    myArray6.push(Math.abs(value.inverterVoltage * value.inverterCurrent));
+                    myArray4.push(Math.abs(value.val().inverterVoltage));
+                    myArray5.push(Math.abs(value.val().inverterCurrent));
+                    myArray6.push(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent));
 
-                    myArray7.push(Math.abs(value.gridVoltage));
-                    myArray8.push(Math.abs(value.gridCurrent));
-                    myArray9.push(Math.abs(value.gridVoltage * value.gridCurrent));
+                    myArray7.push(Math.abs(value.val().gridVoltage));
+                    myArray8.push(Math.abs(value.val().gridCurrent));
+                    myArray9.push(Math.abs(value.val().gridVoltage * value.val().gridCurrent));
 
-                    myArray10.push(Math.abs(value.batteryVoltage));
-                    myArray11.push(Math.abs(value.batteryCurrent));
-                    myArray12.push(Math.abs(value.batteryVoltage * value.batteryCurrent));
+                    myArray10.push(Math.abs(value.val().batteryVoltage));
+                    myArray11.push(Math.abs(value.val().batteryCurrent));
+                    myArray12.push(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent));
+
+                    let sum1 = 0;
+                    let sum2 = 0;
+                    let sum3 = 0;
+                    let sum4 = 0;
+                    let sum5 = 0;
+                    let sum6 = 0;
+                    let sum7 = 0;
+                    let sum8 = 0;
+                    let sum9 = 0;
+                    let sum10 = 0;
+                    let sum11 = 0;
+                    let sum12 = 0;
+
+                    for (let i = iterVal; i < iterVal + 10; i++) {
+                        sum1 += myArray1[i];
+                        sum2 += myArray2[i];
+                        sum3 += myArray3[i];
+                        sum4 += myArray4[i];
+                        sum5 += myArray5[i];
+                        sum6 += myArray6[i];
+                        sum7 += myArray7[i];
+                        sum8 += myArray8[i];
+                        sum9 += myArray9[i];
+                        sum10 += myArray10[i];
+                        sum11 += myArray11[i];
+                        sum12 += myArray12[i];
+                    }
+                    iterVal++;
+                }
+
+                axisValueCount++;
+
+                if (axisValueCount > 10) {
+                    myArray1.push(Math.abs(value.val().solarVoltage));
+                    myArray2.push(Math.abs(value.val().solarCurrent));
+                    myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent));
+
+                    myArray4.push(Math.abs(value.val().inverterVoltage));
+                    myArray5.push(Math.abs(value.val().inverterCurrent));
+                    myArray6.push(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent));
+
+                    myArray7.push(Math.abs(value.val().gridVoltage));
+                    myArray8.push(Math.abs(value.val().gridCurrent));
+                    myArray9.push(Math.abs(value.val().gridVoltage * value.val().gridCurrent));
+
+                    myArray10.push(Math.abs(value.val().batteryVoltage));
+                    myArray11.push(Math.abs(value.val().batteryCurrent));
+                    myArray12.push(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent));
 
                     let sum1 = 0;
                     let sum2 = 0;
@@ -373,21 +426,21 @@ const postDB = async (req, res, next) => {
 
                 return {
                     ccAxisXValue: dateForGraphVal,
-                    SolarVoltage: Math.floor(Math.abs(value.solarVoltage)),
-                    SolarCurrent: Math.abs(value.solarCurrent).toFixed(2),
-                    SolarPower: Math.floor(Math.abs(value.solarVoltage * value.solarCurrent)),
+                    SolarVoltage: Math.floor(Math.abs(value.val().solarVoltage)),
+                    SolarCurrent: Math.abs(value.val().solarCurrent).toFixed(2),
+                    SolarPower: Math.floor(Math.abs(value.val().solarVoltage * value.val().solarCurrent)),
 
-                    InverterVoltage: Math.floor(Math.abs(value.inverterVoltage)),
-                    InverterCurrent: Math.abs(value.inverterCurrent).toFixed(2),
-                    InverterPower: Math.floor(Math.abs(value.inverterVoltage * value.inverterCurrent)),
+                    InverterVoltage: Math.floor(Math.abs(value.val().inverterVoltage)),
+                    InverterCurrent: Math.abs(value.val().inverterCurrent).toFixed(2),
+                    InverterPower: Math.floor(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent)),
 
-                    GridVoltage: Math.floor(Math.abs(value.gridVoltage)),
-                    GridCurrent: Math.abs(value.gridCurrent).toFixed(2),
-                    GridPower: Math.floor(Math.abs(value.gridVoltage * value.gridCurrent)),
+                    GridVoltage: Math.floor(Math.abs(value.val().gridVoltage)),
+                    GridCurrent: Math.abs(value.val().gridCurrent).toFixed(2),
+                    GridPower: Math.floor(Math.abs(value.val().gridVoltage * value.val().gridCurrent)),
 
-                    BatteryVoltage: Math.floor(Math.abs(value.batteryVoltage)),
-                    BatteryCurrent: Math.abs(value.batteryCurrent).toFixed(2),
-                    BatteryPower: Math.floor(Math.abs(value.batteryVoltage * value.batteryCurrent)),
+                    BatteryVoltage: Math.floor(Math.abs(value.val().batteryVoltage)),
+                    BatteryCurrent: Math.abs(value.val().batteryCurrent).toFixed(2),
+                    BatteryPower: Math.floor(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)),
                 };
             });
 
@@ -403,7 +456,8 @@ const postDB = async (req, res, next) => {
         res.status(500);
         next(error);
     }
-};
+}
+
 
 
 
