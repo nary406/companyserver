@@ -260,12 +260,10 @@ const postDB = async (req, res, next) => {
             const currentISTDate = new Date(currentUTCDate.getTime());
             const dateOrg = currentISTDate.toISOString().substring(0, 10);
             const caldate = dateOrg;
-
-            // Convert the date to a UNIX timestamp
             const uniValue = Math.floor(new Date(caldate).getTime() / 1000);
 
             // Calculate the current timestamp in IST
-            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000);
+            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000) - 19800;
             let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
 
             const dataRef = ref(db, `data/${mail}/timestamp`);
@@ -312,13 +310,11 @@ const postDB = async (req, res, next) => {
             const dataCharts = records.map((snapshot) => {
                 const value = snapshot.val();
                 const timestamp = Number(snapshot.key);
-
-                // Adjust timestamp to IST
                 let timeVal = 0;
                 if (timestamp > 1663660000 && mail === "ftb001") {
                     timeVal = 5400 - 230;
                 }
-                const t = new Date((timestamp + timeVal) * 1000);
+                const t = new Date((timestamp + timeVal-19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
                 if (dateForGraph.split(':')[0] === "24") {
