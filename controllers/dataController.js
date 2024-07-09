@@ -17,9 +17,11 @@ const getAlldevices = async (req, res, next) => {
         "rmsv34_002- Pootai", "rmsv35_002- Puthirampattu", "rmsv4_001- Melmalaiyanur",
         "rmsv4_002- Thandavankulam"
     ];
+    
     try {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const timestamp24HoursAgo = currentTimestamp - (24 * 60 * 60);
+        const uniValue = currentTimestamp - 19800;
 
         const results = await Promise.all(mail.map(async (email) => {
             const emailPrefix = email.split('-')[0].trim();
@@ -29,7 +31,6 @@ const getAlldevices = async (req, res, next) => {
 
             const records = [];
             let k = 0;
-            const uniValue = parseInt((Date.now() / 1000).toFixed(0)) - 19800;
 
             snapshot.forEach((childSnapshot) => {
                 if (emailPrefix === "ftb001" && childSnapshot.key > 1663660000) {
@@ -46,7 +47,7 @@ const getAlldevices = async (req, res, next) => {
             let p1ValueTot = 0;
             let flag = 0;
 
-            records.map((snapshot) => {
+            for (const snapshot of records) {
                 const timestamp = Number(snapshot.key);
                 let timeVal = 0;
                 if (timestamp > 1663660000 && mail === "ftb001") {
@@ -76,8 +77,8 @@ const getAlldevices = async (req, res, next) => {
                         }
                     }
                 }
+            }
 
-            });
             const additionalDataRef = ref(db, `data/${emailPrefix}/latestValues`);
             const additionalData = await get(additionalDataRef);
 
@@ -91,16 +92,8 @@ const getAlldevices = async (req, res, next) => {
             };
         }));
 
-        const workingDevices = [];
-        const notWorkingDevices = [];
-
-        results.forEach((result) => {
-            if (result.record > 0) {
-                workingDevices.push(result);
-            } else {
-                notWorkingDevices.push(result);
-            }
-        });
+        const workingDevices = results.filter(result => result.record > 0);
+        const notWorkingDevices = results.filter(result => result.record === 0);
 
         res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
     } catch (error) {
@@ -283,13 +276,6 @@ const postDB = async (req, res, next) => {
                     records.push(childSnapshot);
                 }
             });
-
-            let prevTime = 24;
-            let timeCount = 0;
-            let p1Value = 0;
-            let p2Value = 0;
-            let p3Value = 0;
-            let flag = 0;
 
             let p1ValueTot = 0;
             let p2ValueTot = 0;
