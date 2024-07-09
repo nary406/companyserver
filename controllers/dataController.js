@@ -160,10 +160,10 @@ const getDate = async (req, res, next) => {
                 const t = new Date((timestamp + timeVal) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === 24){
+                if (dateForGraph.split(':')[0] === 24) {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
                 }
-                else{
+                else {
                     dateForGraphVal = dateForGraph;
                 }
                 axisValueCount++;
@@ -257,7 +257,7 @@ const postDB = async (req, res, next) => {
             const snapshot = await get(databaseRef);
             var curr = new Date(new Date());
             curr.setDate(curr.getDate());
-            const dateOrg = curr.toISOString().substring(0,10);
+            const dateOrg = curr.toISOString().substring(0, 10);
             const caldate = dateOrg;
             const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
             let currentTimestampVal;
@@ -309,17 +309,25 @@ const postDB = async (req, res, next) => {
 
             const dataCharts = Object.entries(records).map(([key, value]) => {
                 const timestamp = Number(value.key);
-                let timeVal = 0;
-                if (timestamp > 1663660000 && mail === "ftb001") {
-                    timeVal = 5400 - 230;
-                }
-                const t = new Date((timestamp + timeVal) * 1000);
-                const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
-                let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === 24){
+                // let timeVal = 0;
+                // if (timestamp > 1663660000 && mail === "ftb001") {
+                //     timeVal = 5400 - 230;
+                // }
+                // const t = new Date((timestamp) * 1000);
+                // const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
+                // let dateForGraphVal = "";
+                // if(dateForGraph.split(':')[0] === 24){
+                //     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
+                // }
+                // else{
+                //     dateForGraphVal = dateForGraph;
+                // }
+                const dateForGraph = new Date(timestamp * 1000);
+                const dateForGraphVal = dateForGraph.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                if (dateForGraph.split(':')[0] === 24) {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
                 }
-                else{
+                else {
                     dateForGraphVal = dateForGraph;
                 }
                 axisValueCount++;
