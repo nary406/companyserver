@@ -257,7 +257,7 @@ const postDB = async (req, res, next) => {
             const snapshot = await get(databaseRef);
 
             const currentUTCDate = new Date();
-            const currentISTDate = new Date(currentUTCDate.getTime() + 5.5 * 60 * 60 * 1000);
+            const currentISTDate = new Date(currentUTCDate.getTime());
             const dateOrg = currentISTDate.toISOString().substring(0, 10);
             const caldate = dateOrg;
 
