@@ -160,10 +160,10 @@ const getDate = async (req, res, next) => {
                 const t = new Date((timestamp + timeVal) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if (dateForGraph.split(':')[0] === 24) {
+                if(dateForGraph.split(':')[0] === 24){
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
                 }
-                else {
+                else{
                     dateForGraphVal = dateForGraph;
                 }
                 axisValueCount++;
@@ -255,15 +255,13 @@ const postDB = async (req, res, next) => {
         if (mail) {
             const databaseRef = ref(db, `data/${mail}/latestValues`);
             const snapshot = await get(databaseRef);
-
-            // Convert GMT time to IST
-            var curr = new Date();
-            const ISTOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-            curr = new Date(curr.getTime() + ISTOffset);
+            var curr = new Date(new Date());
             curr.setDate(curr.getDate());
-            const dateOrg = curr.toISOString().substring(0, 10);
+            console.log(curr);
+            const dateOrg = curr.toISOString().substring(0,10);
             const caldate = dateOrg;
             const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
+            console.log(uniValue);
             let currentTimestampVal;
             let timestamp24HoursAgo;
             if (caldate) {
@@ -314,9 +312,9 @@ const postDB = async (req, res, next) => {
             const dataCharts = Object.entries(records).map(([key, value]) => {
                 const timestamp = Number(value.key);
                 let timeVal = 0;
-                if (timestamp > 1663660000 && mail === "ftb001") {
-                    timeVal = 5400 - 230;
-                }
+                // if (timestamp > 1663660000 && mail === "ftb001") {
+                //     timeVal = 5400 - 230;
+                // }
                 const t = new Date((timestamp + timeVal) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
@@ -448,14 +446,16 @@ const postDB = async (req, res, next) => {
             p2ValueTot = (p2ValueTot / 1000).toFixed(2);
             p3ValueTot = (p3ValueTot / 1000).toFixed(2);
             res.status(200).json({ message: 'Data processed successfully', data: { caldate, snapshot, dataCharts, p1ValueTot, p2ValueTot, p3ValueTot } });
-        } else {
+        }
+        else {
             res.status(400);
-            next({ message: "value is empty" });
+            next({ message: "value is empty" });;
         }
     } catch (error) {
         res.status(500);
         next(error);
     }
+
 }
 
 
