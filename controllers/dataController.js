@@ -263,7 +263,7 @@ const postDB = async (req, res, next) => {
 
             // Convert the date to a UNIX timestamp and adjust for IST offset
             const uniValue = Math.floor(new Date(caldate).getTime() / 1000);
-            let currentTimestampVal = Math.floor(Date.now() / 1000) + 19800; // Add 19800 seconds (5.5 hours) for IST
+            let currentTimestampVal = Math.floor(Date.now() / 1000); // Add 19800 seconds (5.5 hours) for IST
 
             let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
             const dataRef = ref(db, `data/${mail}/timestamp`);
