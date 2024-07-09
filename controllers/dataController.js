@@ -256,16 +256,18 @@ const postDB = async (req, res, next) => {
             const databaseRef = ref(db, `data/${mail}/latestValues`);
             const snapshot = await get(databaseRef);
 
-            // Convert the current date and time to IST
-            const currentISTDate = new Date(new Date().getTime() + 5.5 * 60 * 60 * 1000);
+            const currentUTCDate = new Date();
+            const currentISTDate = new Date(currentUTCDate.getTime() + 5.5 * 60 * 60 * 1000);
             const dateOrg = currentISTDate.toISOString().substring(0, 10);
             const caldate = dateOrg;
 
-            // Convert the date to a UNIX timestamp and adjust for IST offset
+            // Convert the date to a UNIX timestamp
             const uniValue = Math.floor(new Date(caldate).getTime() / 1000);
-            let currentTimestampVal = Math.floor(Date.now() / 1000); // Add 19800 seconds (5.5 hours) for IST
 
+            // Calculate the current timestamp in IST
+            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000);
             let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
+
             const dataRef = ref(db, `data/${mail}/timestamp`);
             const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
 
@@ -310,17 +312,18 @@ const postDB = async (req, res, next) => {
             const dataCharts = records.map((snapshot) => {
                 const value = snapshot.val();
                 const timestamp = Number(snapshot.key);
+
+                // Adjust timestamp to IST
                 let timeVal = 0;
                 if (timestamp > 1663660000 && mail === "ftb001") {
                     timeVal = 5400 - 230;
                 }
-                const t = new Date((timestamp + timeVal) * 1000 + 5.5 * 60 * 60 * 1000); // Convert to IST
+                const t = new Date((timestamp + timeVal + 19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === "24"){
+                if (dateForGraph.split(':')[0] === "24") {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
-                }
-                else{
+                } else {
                     dateForGraphVal = dateForGraph;
                 }
                 axisValueCount++;
@@ -405,6 +408,7 @@ const postDB = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 module.exports = { getAlldevices, getDate, postDB };
