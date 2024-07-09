@@ -324,12 +324,12 @@ const postDB = async (req, res, next) => {
                 // }
                 const dateForGraph = new Date(timestamp * 1000);
                 const dateForGraphVal = dateForGraph.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                if (dateForGraph.split(':')[0] === 24) {
-                    dateForGraphVal = "00:" + dateForGraph.split(':')[1];
-                }
-                else {
-                    dateForGraphVal = dateForGraph;
-                }
+                // if (dateForGraph.split(':')[0] === 24) {
+                //     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
+                // }
+                // else {
+                //     dateForGraphVal = dateForGraph;
+                // }
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
