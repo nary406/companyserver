@@ -263,7 +263,7 @@ const postDB = async (req, res, next) => {
             const uniValue = Math.floor(new Date(caldate).getTime() / 1000);
 
             // Calculate the current timestamp in IST
-            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000) - 19800;
+            let currentTimestampVal = Math.floor(currentISTDate.getTime() / 1000) + 19800;
             let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
 
             const dataRef = ref(db, `data/${mail}/timestamp`);
