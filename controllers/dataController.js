@@ -312,10 +312,10 @@ const postDB = async (req, res, next) => {
             const dataCharts = Object.entries(records).map(([key, value]) => {
                 const timestamp = Number(value.key);
                 let timeVal = 0;
-                // if (timestamp > 1663660000 && mail === "ftb001") {
-                //     timeVal = 5400 - 230;
-                // }
-                const t = new Date((timestamp + timeVal) * 1000);
+                if (timestamp > 1663660000 && mail === "ftb001") {
+                    timeVal = 5400 - 230;
+                }
+                const t = new Date((timestamp + timeVal) * 1000) - 19800;
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
                 if(dateForGraph.split(':')[0] === 24){
