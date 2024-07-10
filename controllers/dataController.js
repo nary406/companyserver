@@ -91,9 +91,10 @@ const getAlldevices = async (req, res, next) => {
                 additionalData: additionalData.val(),
             };
         }));
-
-        const workingDevices = results.filter(result => result.record > 0);
-        const notWorkingDevices = results.filter(result => result.record === 0);
+        const t = Math.ceil(Date.now()/1000);
+        console.log(t);
+        const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 400 );
+        const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 400);
 
         res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
     } catch (error) {
@@ -302,7 +303,7 @@ const postDB = async (req, res, next) => {
             let prevTime = 24;
             let flag = 0;
             let timeCount = 0;
-            
+
             const dataCharts = Object.entries(records).map(([key, value]) => {
                 const timestamp = Number(value.key);
                 let timeVal = 0;
