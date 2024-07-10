@@ -299,6 +299,7 @@ const postDB = async (req, res, next) => {
             const myArray11 = [];
             const myArray12 = [];
             let iterVal = 0;
+            let prevTime = 24;
 
             const dataCharts = Object.entries(records).map(([key, value]) => {
                 const timestamp = Number(value.key);
