@@ -320,7 +320,7 @@ const postDB = async (req, res, next) => {
                 const solarPower = value.val().solarVoltage * value.val().solarCurrent;
                 const gridPower = value.val().gridVoltage * value.val().gridCurrent;
                 const inverterPower = value.val().inverterVoltage * value.val().inverterCurrent;
-
+                const currentTime = Number(dateForGraphVal);
                 if (!isNaN(solarPower) && !isNaN(gridPower) && !isNaN(inverterPower)) {
                     if (prevTime === currentTime) {
                         timeCount++;
