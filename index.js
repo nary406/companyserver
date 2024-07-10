@@ -10,11 +10,7 @@ const PORT = process.env.PORT || 1337;
 
 expressApp.use(express.json());
 
-expressApp.use(cors({
-  origin: 'https://newdashboard.re4billion.ai',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-}));
+expressApp.use(cors());
 
 expressApp.use('/', require('./routes/userRoutes'));
 
