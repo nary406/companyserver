@@ -10,12 +10,8 @@ const PORT = process.env.PORT || 1337;
 
 expressApp.use(express.json());
 
-const corsOptions = {
-  origin: 'https://newdashboard.re4billion.ai/',
-  optionsSuccessStatus: 200
-};
 
-expressApp.use(cors(corsOptions));
+expressApp.use(cors());
 
 expressApp.use('/', require('./routes/userRoutes'));
 
