@@ -92,7 +92,6 @@ const getAlldevices = async (req, res, next) => {
             };
         }));
         const t = Math.ceil(Date.now()/1000);
-        console.log(t);
         const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800 );
         const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 1800);
 
