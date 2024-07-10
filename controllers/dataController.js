@@ -17,7 +17,7 @@ const getAlldevices = async (req, res, next) => {
         "rmsv34_002- Pootai", "rmsv35_002- Puthirampattu", "rmsv4_001- Melmalaiyanur",
         "rmsv4_002- Thandavankulam"
     ];
-    
+
     try {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const timestamp24HoursAgo = currentTimestamp - (24 * 60 * 60);
@@ -153,12 +153,13 @@ const getDate = async (req, res, next) => {
                 const t = new Date((timestamp + timeVal + 19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === 24){
+                if (dateForGraph.split(':')[0] === 24) {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
                 }
-                else{
+                else {
                     dateForGraphVal = dateForGraph;
                 }
+
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
@@ -251,7 +252,7 @@ const postDB = async (req, res, next) => {
             var curr = new Date(new Date());
             curr.setDate(curr.getDate());
             console.log(curr);
-            const dateOrg = curr.toISOString().substring(0,10);
+            const dateOrg = curr.toISOString().substring(0, 10);
             const caldate = dateOrg;
             const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
             console.log(uniValue);
@@ -277,6 +278,10 @@ const postDB = async (req, res, next) => {
                 }
             });
 
+
+            let p1Value = 0;
+            let p2Value = 0;
+            let p3Value = 0;
             let p1ValueTot = 0;
             let p2ValueTot = 0;
             let p3ValueTot = 0;
@@ -301,15 +306,49 @@ const postDB = async (req, res, next) => {
                 if (timestamp > 1663660000 && mail === "ftb001") {
                     timeVal = 5400 - 230;
                 }
-                const t = new Date((timestamp + timeVal+ 19800) * 1000) ;
+                const t = new Date((timestamp + timeVal + 19800) * 1000);
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
-                if(dateForGraph.split(':')[0] === 24){
+                if (dateForGraph.split(':')[0] === 24) {
                     dateForGraphVal = "00:" + dateForGraph.split(':')[1];
                 }
-                else{
+                else {
                     dateForGraphVal = dateForGraph;
                 }
+
+                const solarPower = value.val().solarVoltage * value.val().solarCurrent;
+                const gridPower = value.val().gridVoltage * value.val().gridCurrent;
+                const inverterPower = value.val().inverterVoltage * value.val().inverterCurrent;
+
+                if (!isNaN(solarPower) && !isNaN(gridPower) && !isNaN(inverterPower)) {
+                    if (prevTime === currentTime) {
+                        timeCount++;
+                        p1Value += solarPower;
+                        p2Value += gridPower;
+                        p3Value += inverterPower;
+                    } else {
+                        if (flag === 1) {
+                            p1ValueTot += p1Value / timeCount;
+                            p2ValueTot += p2Value / timeCount;
+                            p3ValueTot += p3Value / timeCount;
+
+                            timeCount = 1;
+                            p1Value = solarPower;
+                            p2Value = gridPower;
+                            p3Value = inverterPower;
+
+                            prevTime = currentTime;
+                        } else {
+                            flag = 1
+                            timeCount = 1;
+                            p1Value = solarPower;
+                            p2Value = gridPower;
+                            p3Value = inverterPower;
+                            prevTime = currentTime;
+                        }
+                    }
+                }
+
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
