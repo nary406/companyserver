@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 1337;
 expressApp.use(express.json());
 
 const corsOptions = {
-    origin: 'https://newdashboard.re4billion.ai/',
+    origin: 'https://newdashboard.re4billion.ai',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 };
