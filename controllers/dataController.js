@@ -1,8 +1,6 @@
 const { getDatabase, ref, query, orderByKey, startAt, get } = require('firebase/database');
 const firebaseConfig = require('../config/firebaseConfig')
 const { initializeApp } = require('firebase/app');
-const { constants } = require('../constants/statusCode');
-const errorHandler = require('../middlewares/errorHandler');
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -14,7 +12,7 @@ const getAlldevices = async (req, res, next) => {
         "ftb001- Kollar", "stb001- Modiyur", "nrmsv2f001- Ananthapuram",
         "rmsv3_001- Vengur", "rmsv3_002- Sithalingamadam", "rmsv32_001- Keelathalanur",
         "rmsv33_001- Perumukkal", "rmsv33_002- Agalur", "rmsv33_005- Saram",
-        "rmsv34_002- Pootai", "rmsv35_002- Puthirampattu", "rmsv4_001- Melmalaiyanur",
+        "rmsv34_002- Pootai", "rmsv35_002- Puthirampattu", "rmsv35_003-Vadalur", "rmsv4_001- Melmalaiyanur",
         "rmsv4_002- Thandavankulam"
     ];
 
