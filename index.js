@@ -1,23 +1,24 @@
 const express = require('express');
-
 const cors = require('cors');
-
-const errorHandler = require('./middlewares/errorHandler')
+const errorHandler = require('./middlewares/errorHandler');
 
 const expressApp = express();
-
 const PORT = process.env.PORT || 1337;
 
 expressApp.use(express.json());
 
-
-expressApp.use(cors());
+const corsOptions = {
+    origin: 'https://re4-drab.vercel.app/',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+expressApp.use(cors(corsOptions));
 
 expressApp.use('/', require('./routes/userRoutes'));
-
 expressApp.use('/admin', require('./routes/dataRoutes'));
 
 expressApp.use(errorHandler);
+
 expressApp.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
