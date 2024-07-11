@@ -8,11 +8,22 @@ const PORT = process.env.PORT || 1337;
 expressApp.use(express.json());
 
 const corsOptions = {
-    origin: 'https://newdashboard.re4billion.ai',
+    origin: (origin, callback) => {
+        const allowedOrigins = ['https://newdashboard.re4billion.ai'];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
 };
+
 expressApp.use(cors(corsOptions));
+
+expressApp.options('*', cors(corsOptions));
 
 expressApp.use('/', require('./routes/userRoutes'));
 expressApp.use('/admin', require('./routes/dataRoutes'));
