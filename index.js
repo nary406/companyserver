@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 1337;
 expressApp.use(express.json());
 
 const corsOptions = {
-    origin: 'https://re4-drab.vercel.app/',
+    origin: 'https://newdashboard.re4billion.ai/',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 };
