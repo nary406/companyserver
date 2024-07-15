@@ -7,12 +7,14 @@ const PORT = process.env.PORT || 1337;
 
 expressApp.use(express.json());
 
+const allowedOrigins = ['https://newdashboard.re4billion.ai'];
+
 const corsOptions = {
     origin: (origin, callback) => {
-        const allowedOrigins = ['https://newdashboard.re4billion.ai'];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.error(`Blocked by CORS: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -23,13 +25,11 @@ const corsOptions = {
 
 expressApp.use(cors(corsOptions));
 
-expressApp.options('*', cors(corsOptions));
-
 expressApp.use('/', require('./routes/userRoutes'));
 expressApp.use('/admin', require('./routes/dataRoutes'));
 
 expressApp.use(errorHandler);
 
 expressApp.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
