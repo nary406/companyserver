@@ -161,7 +161,7 @@ const getDate = async (req, res, next) => {
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
-                    myArray1.push(Math.abs(value.val().solarVoltage));
+                    myArray1.push(Math.abs(value.val().solarVoltage).toFixed(2));
                     myArray2.push(Math.abs(value.val().solarCurrent));
                     myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent));
 
@@ -209,21 +209,21 @@ const getDate = async (req, res, next) => {
 
                 return {
                     ccAxisXValue: dateForGraphVal,
-                    SolarVoltage: Math.floor(Math.abs(value.val().solarVoltage)),
+                    SolarVoltage: Math.abs(value.val().solarVoltage).toFixed(2),
                     SolarCurrent: Math.abs(value.val().solarCurrent).toFixed(2),
-                    SolarPower: Math.floor(Math.abs(value.val().solarVoltage * value.val().solarCurrent)),
+                    SolarPower: Math.abs(value.val().solarVoltage * value.val().solarCurrent).toFixed(2),
 
-                    InverterVoltage: Math.floor(Math.abs(value.val().inverterVoltage)),
+                    InverterVoltage: (Math.abs(value.val().inverterVoltage)).toFixed(2),
                     InverterCurrent: Math.abs(value.val().inverterCurrent).toFixed(2),
-                    InverterPower: Math.floor(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent)),
+                    InverterPower: (Math.abs(value.val().inverterVoltage * value.val().inverterCurrent)).toFixed(2),
 
-                    GridVoltage: Math.floor(Math.abs(value.val().gridVoltage)),
+                    GridVoltage: (Math.abs(value.val().gridVoltage)).toFixed(2),
                     GridCurrent: Math.abs(value.val().gridCurrent).toFixed(2),
-                    GridPower: Math.floor(Math.abs(value.val().gridVoltage * value.val().gridCurrent)),
+                    GridPower: (Math.abs(value.val().gridVoltage * value.val().gridCurrent)).toFixed(2),
 
-                    BatteryVoltage: Math.floor(Math.abs(value.val().batteryVoltage)),
+                    BatteryVoltage: (Math.abs(value.val().batteryVoltage)).toFixed(2),
                     BatteryCurrent: Math.abs(value.val().batteryCurrent),
-                    BatteryPower: Math.floor(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)),
+                    BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2),
                 };
             });
             res.status(200).json({ message: 'Data processed successfully', data: { dataCharts } });
