@@ -7,7 +7,7 @@ const db = getDatabase(app);
 //@params No parameter
 //@GET request
 
-export const getAlldevices = async (req, res, next) => {
+const getAlldevices = async (req, res, next) => {
     const mail = [
         "ftb001- Kollar", "stb001- Modiyur", "nrmsv2f001- Ananthapuram",
         "rmsv3_001- Vengur", "rmsv3_002- Sithalingamadam", "rmsv32_001- Keelathalanur",
@@ -104,7 +104,7 @@ export const getAlldevices = async (req, res, next) => {
 //@params selectedItem, Date
 //@POST request
 
-export const getDate = async (req, res, next) => {
+const getDate = async (req, res, next) => {
     try {
         const mail = req.body.selectedItem;
         const date = req.body.date;
@@ -180,7 +180,7 @@ export const getDate = async (req, res, next) => {
 //@params selectedItem
 //@POST request
 
-export const postDB = async (req, res, next) => {
+const postDB = async (req, res, next) => {
     try {
         const mail = req.body.selectedItem;
         if (mail) {
@@ -254,3 +254,6 @@ export const postDB = async (req, res, next) => {
         next(err);
     }
 };
+
+
+module.exports = { getAlldevices, getDate, postDB };
