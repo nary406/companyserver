@@ -48,10 +48,10 @@ const getAlldevices = async (req, res, next) => {
             for (const snapshot of records) {
                 const timestamp = Number(snapshot.key);
                 let timeVal = 0;
-                if (timestamp > 1663660000 && mail === "ftb001") {
+                if (timestamp > 1663660000 && emailPrefix === "ftb001") {
                     timeVal = 5400 - 230;
                 }
-                const t = new Date((timestamp + timeVal) * 1000);
+                const t = new Date((timestamp + timeVal + 19800) * 1000);
                 const dateForCalculation = new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(t);
                 const currentTime = Number(dateForCalculation);
                 const solarPower = snapshot.val().solarVoltage * snapshot.val().solarCurrent;
@@ -77,10 +77,11 @@ const getAlldevices = async (req, res, next) => {
                 }
             }
 
+            p1ValueTot = (p1ValueTot / 1000).toFixed(2);
+
             const additionalDataRef = ref(db, `data/${emailPrefix}/latestValues`);
             const additionalData = await get(additionalDataRef);
 
-            p1ValueTot = (p1ValueTot / 1000).toFixed(2);
             const record = records.length;
             return {
                 email,
@@ -99,6 +100,7 @@ const getAlldevices = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 //@params selectedItem, Date
