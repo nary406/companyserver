@@ -89,8 +89,8 @@ const getAlldevices = async (req, res, next) => {
                 additionalData: additionalData.val(),
             };
         }));
-        const t = Math.ceil(Date.now()/1000);
-        const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800 );
+        const t = Math.ceil(Date.now() / 1000);
+        const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800);
         const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 1800);
 
         res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
@@ -332,15 +332,13 @@ const postDB = async (req, res, next) => {
                             p1ValueTot += p1Value / timeCount;
                             p2ValueTot += p2Value / timeCount;
                             p3ValueTot += p3Value / timeCount;
-
                             timeCount = 1;
                             p1Value = solarPower;
                             p2Value = gridPower;
                             p3Value = inverterPower;
-
                             prevTime = currentTime;
                         } else {
-                            flag = 1
+                            flag = 1;
                             timeCount = 1;
                             p1Value = solarPower;
                             p2Value = gridPower;
