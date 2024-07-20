@@ -17,9 +17,20 @@ const getAlldevices = async (req, res, next) => {
     ];
 
     try {
-        const currentTimestamp = Math.floor(Date.now() / 1000);
-        const timestamp24HoursAgo = currentTimestamp - (24 * 60 * 60);
-        const uniValue = currentTimestamp - 19800;
+        
+        var curr = new Date(new Date());
+        curr.setDate(curr.getDate());
+        console.log(curr);
+        const dateOrg = curr.toISOString().substring(0, 10);
+        const caldate = dateOrg;
+        const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
+        console.log(uniValue);
+        let currentTimestampVal;
+        let timestamp24HoursAgo;
+        if (caldate) {
+            currentTimestampVal = Math.floor(Date.now() / 1000);
+        }
+        timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
 
         const results = await Promise.all(mail.map(async (email) => {
             const emailPrefix = email.split('-')[0].trim();
@@ -75,7 +86,7 @@ const getAlldevices = async (req, res, next) => {
                     }
                 }
             }
-            
+
             if (flag === 1) {
                 p1ValueTot += p1Value / timeCount;
             }
