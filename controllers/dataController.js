@@ -178,7 +178,7 @@ const getDate = async (req, res, next) => {
                 axisValueCount++;
 
                 if (axisValueCount > 10) {
-                    myArray1.push(Math.abs(value.val().solarVoltage).toFixed(2));
+                    myArray1.push(Math.abs(value.val().solarVoltage));
                     myArray2.push(Math.abs(value.val().solarCurrent));
                     myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent));
 
