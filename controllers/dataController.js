@@ -9,7 +9,7 @@ const db = getDatabase(app);
 
 const getAlldevices = async (req, res, next) => {
     const mail = [
-        "ftb001- Kollar", "stb001- Modiyur", "nrmsv2f001- Ananthapuram",
+        "ftb001- Kollar", "stb001- Modaiyur", "nrmsv2f001- Ananthapuram",
         "rmsv3_001- Vengur", "rmsv3_002- Sithalingamadam", "rmsv32_001- Keelathalanur",
         "rmsv33_001- Perumukkal", "rmsv33_002- Agalur", "rmsv33_005- Saram",
         "rmsv34_002- Pootai", "rmsv35_002- Puthirampattu", "rmsv35_003- Vadalur", "rmsv4_001- Melmalaiyanur",
