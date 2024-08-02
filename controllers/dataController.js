@@ -17,19 +17,12 @@ const getAlldevices = async (req, res, next) => {
     ];
 
     try {
-        var curr = new Date(new Date());
-        curr.setDate(curr.getDate());
-        console.log(curr);
+        const curr = new Date();
         const dateOrg = curr.toISOString().substring(0, 10);
         const caldate = dateOrg;
-        const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
-        console.log(uniValue);
-        let currentTimestampVal;
-        let timestamp24HoursAgo;
-        if (caldate) {
-            currentTimestampVal = Math.floor(Date.now() / 1000);
-        }
-        timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
+        const uniValue = Math.floor(new Date(caldate).getTime() / 1000) - 19800;
+        const currentTimestampVal = Math.floor(Date.now() / 1000);
+        const timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
 
         const results = await Promise.all(mail.map(async (email) => {
             const emailPrefix = email.split('-')[0].trim();
@@ -38,8 +31,6 @@ const getAlldevices = async (req, res, next) => {
             const snapshot = await get(queryRef);
 
             const records = [];
-            let k = 0;
-
             snapshot.forEach((childSnapshot) => {
                 if (emailPrefix === "ftb001" && childSnapshot.key > 1663660000) {
                     k = 5400;
@@ -55,15 +46,14 @@ const getAlldevices = async (req, res, next) => {
             let p1ValueTot = 0;
             let flag = 0;
 
-            for (const record of records) {
+            records.forEach((record) => {
                 const timestamp = Number(record.key);
                 let timeVal = 0;
                 if (timestamp > 1663660000 && emailPrefix === "ftb001") {
                     timeVal = 5400 - 230;
                 }
                 const t = new Date((timestamp + timeVal + 19800) * 1000);
-                const dateForCalculation = new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(t);
-                const currentTime = Number(dateForCalculation.split(":")[0]);
+                const currentTime = Number(new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(t).split(":")[0]);
                 const solarPower = record.val().solarVoltage * record.val().solarCurrent;
 
                 if (!isNaN(solarPower)) {
@@ -84,7 +74,7 @@ const getAlldevices = async (req, res, next) => {
                         }
                     }
                 }
-            }
+            });
 
             if (flag === 1) {
                 p1ValueTot += p1Value / timeCount;
@@ -95,14 +85,14 @@ const getAlldevices = async (req, res, next) => {
             const additionalDataRef = ref(db, `data/${emailPrefix}/latestValues`);
             const additionalData = await get(additionalDataRef);
 
-            const record = records.length;
             return {
                 email,
-                record,
+                record: records.length,
                 p1ValueTot,
                 additionalData: additionalData.val(),
             };
         }));
+
         const t = Math.ceil(Date.now() / 1000);
         const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800);
         const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 1800);
@@ -113,6 +103,7 @@ const getAlldevices = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 
