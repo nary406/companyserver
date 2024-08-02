@@ -17,7 +17,6 @@ const getAlldevices = async (req, res, next) => {
     ];
 
     try {
-        
         var curr = new Date(new Date());
         curr.setDate(curr.getDate());
         console.log(curr);
@@ -266,7 +265,6 @@ const postDB = async (req, res, next) => {
             const snapshot = await get(databaseRef);
             var curr = new Date(new Date());
             curr.setDate(curr.getDate());
-            console.log(curr);
             const dateOrg = curr.toISOString().substring(0, 10);
             const caldate = dateOrg;
             const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;

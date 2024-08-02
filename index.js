@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 1337;
 
 expressApp.use(express.json());
 
-const allowedOrigins = ['https://newdashboard.re4billion.ai'];
+const allowedOrigins = ['https://newdashboard.re4billion.ai', 'http://localhost:3000'];
 
 const corsOptions = {
     origin: (origin, callback) => {
