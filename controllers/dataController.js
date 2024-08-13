@@ -24,92 +24,89 @@ const getAlldevices = async (req, res, next) => {
         const currentTimestampVal = Math.floor(Date.now() / 1000);
         const timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
 
-        const batchSize = 5;
-        const mailBatches = [];
-        for (let i = 0; i < mail.length; i += batchSize) {
-            mailBatches.push(mail.slice(i, i + batchSize));
-        }
+        const async = require('async');
+        const batchSize = 4;
 
-        const results = [];
+        async.mapLimit(mail, batchSize, async (email) => {
+            const emailPrefix = email.split('-')[0].trim();
+            const dataRef = ref(db, `data/${emailPrefix}/timestamp`);
+            const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
+            const snapshot = await get(queryRef);
 
-        for (const batch of mailBatches) {
-            const batchResults = await Promise.all(batch.map(async (email) => {
-                const emailPrefix = email.split('-')[0].trim();
-                const dataRef = ref(db, `data/${emailPrefix}/timestamp`);
-                const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
-                const snapshot = await get(queryRef);
-
-                const records = [];
-                snapshot.forEach((childSnapshot) => {
-                    const key = Number(childSnapshot.key);
-                    if (key > uniValue - (emailPrefix === "ftb001" ? 5400 : 0) &&
-                        key < uniValue + 86400 - (emailPrefix === "ftb001" ? 5400 : 0)) {
-                        records.push(childSnapshot);
-                    }
-                });
-
-                let p1Value = 0;
-                let p1ValueTot = 0;
-                let timeCount = 0;
-                let prevTime = null;
-                let flag = 0;
-
-                records.forEach((record) => {
-                    const value = record.val();
-                    const timestamp = Number(record.key);
-                    const timeVal = (timestamp > 1663660000 && emailPrefix === "ftb001") ? 5400 - 230 : 0;
-                    const adjustedTimestamp = timestamp + timeVal + 19800;
-                    const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(new Date(adjustedTimestamp * 1000));
-                    const currentTime = Number(dateForGraph.split(":")[0]);
-
-                    const solarPower = value.solarVoltage * value.solarCurrent;
-
-                    if (!isNaN(solarPower)) {
-                        if (prevTime === currentTime) {
-                            timeCount++;
-                            p1Value += solarPower;
-                        } else {
-                            if (flag === 1) {
-                                p1ValueTot += p1Value / timeCount;
-                            }
-                            timeCount = 1;
-                            p1Value = solarPower;
-                            prevTime = currentTime;
-                            flag = 1;
-                        }
-                    }
-                });
-
-                if (flag === 1) {
-                    p1ValueTot += p1Value / timeCount;
+            const records = [];
+            snapshot.forEach((childSnapshot) => {
+                const key = Number(childSnapshot.key);
+                if (key > uniValue - (emailPrefix === "ftb001" ? 5400 : 0) && key < uniValue + 86400 - (emailPrefix === "ftb001" ? 5400 : 0)) {
+                    records.push(childSnapshot);
                 }
+            });
 
-                p1ValueTot = (p1ValueTot / 1000).toFixed(2);
+            let p1Value = 0;
+            let p1ValueTot = 0;
+            let timeCount = 0;
+            let prevTime = null;
+            let flag = 0;
 
-                const additionalDataRef = ref(db, `data/${emailPrefix}/latestValues`);
-                const additionalData = await get(additionalDataRef);
+            records.forEach((record) => {
+                const value = record.val();
+                const timestamp = Number(record.key);
+                const timeVal = (timestamp > 1663660000 && emailPrefix === "ftb001") ? 5400 - 230 : 0;
+                const adjustedTimestamp = timestamp + timeVal + 19800;
+                const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false }).format(new Date(adjustedTimestamp * 1000));
+                const currentTime = Number(dateForGraph.split(":")[0]);
 
-                return {
-                    email,
-                    record: records.length,
-                    p1ValueTot,
-                    additionalData: additionalData.val(),
-                };
-            }));
-            results.push(...batchResults);
-        }
+                const solarPower = value.solarVoltage * value.solarCurrent;
 
-        const t = Math.ceil(Date.now() / 1000);
-        const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800);
-        const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 1800);
+                if (!isNaN(solarPower)) {
+                    if (prevTime === currentTime) {
+                        timeCount++;
+                        p1Value += solarPower;
+                    } else {
+                        if (flag === 1) {
+                            p1ValueTot += p1Value / timeCount;
+                        }
+                        timeCount = 1;
+                        p1Value = solarPower;
+                        prevTime = currentTime;
+                        flag = 1;
+                    }
+                }
+            });
 
-        res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
+            if (flag === 1) {
+                p1ValueTot += p1Value / timeCount;
+            }
+
+            p1ValueTot = (p1ValueTot / 1000).toFixed(2);
+
+            const additionalDataRef = ref(db, `data/${emailPrefix}/latestValues`);
+            const additionalData = await get(additionalDataRef);
+
+            return {
+                email,
+                record: records.length > 0 ? true : false,
+                p1ValueTot,
+                additionalData: additionalData.val(),
+            };
+        }, (err, results) => {
+            if (err) {
+                console.error("Error:", err);
+                res.status(500);
+                return next(err);
+            }
+
+            const t = Math.ceil(Date.now() / 1000);
+            const workingDevices = results.filter(result => result.record === true && Math.abs(result.additionalData.tValue - t) <= 1800);
+            const notWorkingDevices = results.filter(result => result.record === false || Math.abs(result.additionalData.tValue - t) > 1800);
+            res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
+        });
     } catch (error) {
         console.error("Error:", error);
         res.status(500);
         next(error);
     }
 };
+
 
 
 
