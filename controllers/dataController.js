@@ -4,6 +4,25 @@ const { initializeApp } = require('firebase/app');
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+
+const authenticateUser = async (req, res, next) => {
+    const idToken = req.headers.authorization?.split('Bearer ')[1];
+  
+    if (!idToken) {
+      return res.status(401).json({ message: 'Unauthorized access: No token provided' });
+    }
+  
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      req.user = decodedToken;
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: 'Unauthorized access: Invalid token' });
+    }
+  };
+
+
+
 //@params No parameter
 //@GET request
 const getAlldevices = async (req, res, next) => {
@@ -373,4 +392,8 @@ const postDB = async (req, res, next) => {
     }
 }
 
-module.exports = { getAlldevices, getDate, postDB };
+module.exports = {
+  getAlldevices: [authenticateUser, getAlldevices],
+  getDate: [authenticateUser, getDate],
+  postDB: [authenticateUser, postDB],
+};
