@@ -4,7 +4,7 @@ const router = express.Router();
 
 const { getAlldevices, getDate, postDB} = require('../controllers/dataController');
 
-router.route('/Alldevices').get(getAlldevices);
+router.route('/alldevices').get(getAlldevices);
 
 router.route('/date').post(getDate);
 

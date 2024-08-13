@@ -36,7 +36,7 @@ const getAlldevices = async (req, res, next) => {
             const batchResults = await Promise.all(batch.map(async (email) => {
                 const emailPrefix = email.split('-')[0].trim();
                 const dataRef = ref(db, `data/${emailPrefix}/timestamp`);
-                const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo), limitToLast(1000));
+                const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
                 const snapshot = await get(queryRef);
 
                 const records = [];
@@ -102,8 +102,6 @@ const getAlldevices = async (req, res, next) => {
         const t = Math.ceil(Date.now() / 1000);
         const workingDevices = results.filter(result => result.record > 0 && Math.abs(result.additionalData.tValue - t) <= 1800);
         const notWorkingDevices = results.filter(result => result.record === 0 || Math.abs(result.additionalData.tValue - t) > 1800);
-
-        console.timeEnd("Total Processing Time");
 
         res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
     } catch (error) {
