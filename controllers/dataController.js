@@ -107,9 +107,6 @@ const getAlldevices = async (req, res, next) => {
     }
 };
 
-
-
-
 //@params selectedItem, Date
 //@POST request
 
@@ -232,7 +229,7 @@ const getDate = async (req, res, next) => {
 
                     BatteryVoltage: (Math.abs(value.val().batteryVoltage)).toFixed(2),
                     BatteryCurrent: Math.abs(value.val().batteryCurrent),
-                    BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2),
+                    BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2)
                 };
             });
             res.status(200).json({ message: 'Data processed successfully', data: { dataCharts } });
@@ -381,4 +378,32 @@ const postDB = async (req, res, next) => {
     }
 }
 
-module.exports = { getAlldevices, getDate, postDB };
+
+const getValDate = async (req, res, next) => {
+    try{
+        const mail = req.body.selectedItem;
+        const date = req.body.date;
+        if(mail && date){
+            const additionalDataRef = ref(db, `data/${mail}/latestValues`);
+            const additionalData = await get(additionalDataRef);
+            
+            res.status(200).json({ 
+                message: 'Data processed successfully', 
+                data: {
+                    SolarGeneration: Math.abs(additionalData.val().solarenergy),
+                    GridEnergy: Math.abs(additionalData.val().gridenergy),
+                    LoadConsumption: Math.abs(additionalData.val().loadconsumption),
+                } 
+            });
+        }
+        else{
+            res.status(400);
+            next({ message: "value is empty" });
+        }
+    }
+    catch(err){
+        console.error(err);
+    }
+}
+
+module.exports = { getAlldevices, getDate, postDB, getValDate };
