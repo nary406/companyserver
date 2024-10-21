@@ -299,8 +299,7 @@ const postDB = async (req, res, next) => {
                 const p1Values = [];
                 const p2Values = [];
                 const p3Values = [];
-                const timeValues = [];
-   
+                
   
     let timeInterval
 
