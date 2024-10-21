@@ -116,9 +116,14 @@ const getDate = async (req, res, next) => {
         const date = req.body.date;
         if (mail && date) {
             const curr = new Date(date);
+           
             const dateOrg = curr.toISOString().substring(0, 10);
+console.log(dateOrg)
+
             const uniValue = Math.floor(new Date(dateOrg).getTime() / 1000) - 19800;
+       
             const timestamp24HoursAgo = uniValue - (24 * 60 * 60);
+         
             const dataRef = ref(db, `data/${mail}/timestamp`);
             const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
             const snapshots = await get(queryRef);
@@ -128,11 +133,11 @@ const getDate = async (req, res, next) => {
                 if (mail === "ftb001" && childSnapshot.key > 1663660000) {
                     k = 5400;
                 }
-                if (childSnapshot.key > uniValue - k && childSnapshot.key < uniValue + 86400 - k) {
+                if (childSnapshot.key > uniValue  && childSnapshot.key < uniValue + 86400 ) {
                     records.push(childSnapshot);
                 }
             });
-
+            console.log(records)
             let axisValueCount = 0;
             const myArray1 = [];
             const myArray2 = [];
@@ -152,9 +157,10 @@ const getDate = async (req, res, next) => {
                 const timestamp = Number(value.key);
                 let timeVal = 0;
                 if (timestamp > 1663660000 && mail === "ftb001") {
-                    timeVal = 5400 - 230;
+                    timeVal = 5400 ;
                 }
-                const t = new Date((timestamp + timeVal + 19800) * 1000);
+                const t = new Date((timestamp  ) * 1000);
+
                 const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(t);
                 let dateForGraphVal = "";
                 if (dateForGraph.split(':')[0] === 24) {
@@ -232,7 +238,7 @@ const getDate = async (req, res, next) => {
                     BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2)
                 };
             });
-            res.status(200).json({ message: 'Data processed successfully', data: { dataCharts } });
+            res.status(200).json({ message: 'Data processed successfully', data: {dataCharts,records } });
         } else {
             res.status(400);
             next({ message: "Either values are empty" });
@@ -247,137 +253,159 @@ const getDate = async (req, res, next) => {
 //@params selectedItem
 //@POST request
 const postDB = async (req, res, next) => {
-    try {
-        const mail = req.body.selectedItem;
-        if (mail) {
-            const databaseRef = ref(db, `data/${mail}/latestValues`);
-            const snapshot = await get(databaseRef);
-            var curr = new Date(new Date());
-            curr.setDate(curr.getDate());
-            const dateOrg = curr.toISOString().substring(0, 10);
-            const caldate = dateOrg;
-            const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0)) - 19800;
-            let currentTimestampVal = Math.floor(Date.now() / 1000);
-            let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
-            const dataRef = ref(db, `data/${mail}/timestamp`);
-            const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
-            const snapshots = await get(queryRef);
+        try {
+            // 1. Fetch the data
+            // 2. Solar volatge and Solar current for an hour form the firebase
+            // 3. Power Value V*I (each and every hr)
+            // 4. Average the Power value for that hr
+            // 5. W to Kw
+    
+            const mail = req.body.selectedItem;
+            if (mail) {
+                const databaseRef = ref(db, `data/${mail}/latestValues`);
+                const snapshot = await get(databaseRef);
+                var curr = new Date();
+                
+                const dateOrg = curr.toISOString().substring(0, 10);
+                const caldate = dateOrg;
+                const uniValue = parseInt((new Date(caldate) / 1000).toFixed(0))-19800 ;
+   
+                let currentTimestampVal = Math.floor(Date.now() / 1000);
+                let timestamp24HoursAgo = currentTimestampVal - (24 * 60 * 60);
+                const dataRef = ref(db, `data/${mail}/timestamp`);
+                const queryRef = query(dataRef, orderByKey(), startAt("" + timestamp24HoursAgo));
+                const snapshots = await get(queryRef);
+    
+                const records = [];
+                let k = 0;
+                snapshots.forEach((childSnapshot) => {
+                    if (mail === "ftb001" && childSnapshot.key > 1663660000) {
+                        k = 5400;
+                    }
+                    if (childSnapshot.key > uniValue  && childSnapshot.key < uniValue + 86400 ) {
+                        records.push(childSnapshot);
+                    }
+                });
+    
+                let p1Value = 0;
+                let p2Value = 0;
+                let p3Value = 0;
+                let p1ValueTot = 0;
+                let p2ValueTot = 0;
+                let p3ValueTot = 0;
+                let timeCount = 0;
+                let prevTime = null;
+    
+                const p1Values = [];
+                const p2Values = [];
+                const p3Values = [];
+                const timeValues = [];
+   
+  
+    let timeInterval
 
-            const records = [];
-            let k = 0;
-            snapshots.forEach((childSnapshot) => {
-                if (mail === "ftb001" && childSnapshot.key > 1663660000) {
-                    k = 5400;
-                }
-                if (childSnapshot.key > uniValue - k && childSnapshot.key < uniValue + 86400 - k) {
-                    records.push(childSnapshot);
-                }
-            });
-
-            let p1Value = 0;
-            let p2Value = 0;
-            let p3Value = 0;
-            let p1ValueTot = 0;
-            let p2ValueTot = 0;
-            let p3ValueTot = 0;
-            let timeCount = 0;
-            let prevTime = null;
-
-            const p1Values = [];
-            const p2Values = [];
-            const p3Values = [];
-            const timeValues = [];
-
-            const dataCharts = records.map((childSnapshot) => {
-                const value = childSnapshot.val();
-                const timestamp = Number(childSnapshot.key);
-                let timeVal = 0;
-                if (timestamp > 1663660000 && mail === "ftb001") {
-                    timeVal = 5400 - 230;
-                }
-                const adjustedTimestamp = timestamp + timeVal + 19800;
-                const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(adjustedTimestamp * 1000));
-                const currentTime = parseInt(dateForGraph.split(':')[0], 10);
-
-                const solarPower = value.solarVoltage * value.solarCurrent;
-                const gridPower = value.gridVoltage * value.gridCurrent;
-                const inverterPower = value.inverterVoltage * value.inverterCurrent;
-
-                if (!isNaN(solarPower) && !isNaN(gridPower) && !isNaN(inverterPower)) {
-                    if (prevTime === currentTime) {
-                        timeCount++;
-                        p1Value += solarPower;
-                        p2Value += gridPower;
-                        p3Value += inverterPower;
-                    } else {
-                        if (timeCount > 0) {
-                            p1ValueTot += p1Value / timeCount;
-                            p2ValueTot += p2Value / timeCount;
-                            p3ValueTot += p3Value / timeCount;
-                        }
-                        timeCount = 1;
-                        p1Value = solarPower;
-                        p2Value = gridPower;
-                        p3Value = inverterPower;
-                        prevTime = currentTime;
-                    }
-                    p1Values.push(solarPower);
-                    p2Values.push(gridPower);
-                    p3Values.push(inverterPower);
-                    timeValues.push(dateForGraph);
-                }
-
-                return {
-                    ccAxisXValue: dateForGraph,
-                    SolarVoltage: Math.floor(Math.abs(value.solarVoltage)),
-                    SolarCurrent: Math.abs(value.solarCurrent).toFixed(2),
-                    SolarPower: Math.floor(Math.abs(value.solarVoltage * value.solarCurrent)),
-
-                    InverterVoltage: Math.floor(Math.abs(value.inverterVoltage)),
-                    InverterCurrent: Math.abs(value.inverterCurrent).toFixed(2),
-                    InverterPower: Math.floor(Math.abs(value.inverterVoltage * value.inverterCurrent)),
-
-                    GridVoltage: Math.floor(Math.abs(value.gridVoltage)),
-                    GridCurrent: Math.abs(value.gridCurrent).toFixed(2),
-                    GridPower: Math.floor(Math.abs(value.gridVoltage * value.gridCurrent)),
-
-                    BatteryVoltage: Math.floor(Math.abs(value.batteryVoltage)),
-                    BatteryCurrent: Math.abs(value.batteryCurrent).toFixed(2),
-                    BatteryPower: Math.floor(Math.abs(value.batteryVoltage * value.batteryCurrent)),
-                };
-            });
-
-            if (timeCount > 0) {
-                p1ValueTot += p1Value / timeCount;
-                p2ValueTot += p2Value / timeCount;
-                p3ValueTot += p3Value / timeCount;
-            }
-
-            p1ValueTot = (p1ValueTot / 1000).toFixed(2);
-            p2ValueTot = (p2ValueTot / 1000).toFixed(2);
-            p3ValueTot = (p3ValueTot / 1000).toFixed(2);
-
-            res.status(200).json({ 
-                message: 'Data processed successfully', 
-                data: { 
-                    caldate, 
-                    snapshot, 
-                    dataCharts, 
-                    p1ValueTot, 
-                    p2ValueTot, 
-                    p3ValueTot 
-                } 
-            });
-        } else {
-            res.status(400);
-            next({ message: "value is empty" });
-        }
-    } catch (error) {
-        res.status(500);
-        next(error);
+    if (mail === "rmsv35_003") {
+        timeInterval = 1;
+        console.log("vadalur");
+    } else if (mail.startsWith("rmsv35")) {
+        timeInterval = 5; // Set for other devices starting with "rmsv35"
+    } else {
+        timeInterval = 1; // Default for all other devices
     }
-}
+    
+                const dataCharts = records.map((childSnapshot) => {
+                    const value = childSnapshot.val();
+                    const timestamp = Number(childSnapshot.key);
+                    let timeVal = 0;
+                    if (timestamp > 1663660000 && mail === "ftb001") {
+                        timeVal = 5400 ;
+                    }
+   
+                    const adjustedTimestamp = timestamp  ;
+                    const dateForGraph = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(adjustedTimestamp * 1000));
+                    const currentTime = parseInt(dateForGraph.split(':')[0], 10);
 
+ 
+    
+                    const solarPower = ((value.solarVoltage * value.solarCurrent)*timeInterval*60)/(1000*3600);
+                    const gridPower = ((value.gridVoltage * value.gridCurrent)*timeInterval*60)/(1000*3600);
+                    const inverterPower =((value.inverterVoltage * value.inverterCurrent)*timeInterval*60)/(1000*3600);
+    
+                    if (!isNaN(solarPower) && !isNaN(gridPower) && !isNaN(inverterPower)) {
+                        if (prevTime === currentTime) {
+                            timeCount++;
+                            p1Value += solarPower;
+                            p2Value += gridPower;
+                            p3Value += inverterPower;
+                        } else {
+                            if (timeCount > 0) {
+                                p1ValueTot += p1Value ;
+                                p2ValueTot += p2Value ;
+                                p3ValueTot += p3Value ;
+                            }
+                            timeCount = 1;
+                            p1Value = solarPower;
+                            p2Value = gridPower;
+                            p3Value = inverterPower;
+                            prevTime = currentTime;
+                        }
+     // previous developer code
+    //                     p1Values.push(solarPower);
+    //                     p2Values.push(gridPower);
+    //                     p3Values.push(inverterPower);
+    //                     timeValues.push(dateForGraph);
+                    }
+    
+                    return {
+                        ccAxisXValue: dateForGraph,
+                        SolarVoltage: Math.floor(Math.abs(value.solarVoltage)),
+                        SolarCurrent: Math.abs(value.solarCurrent).toFixed(2),
+                        SolarPower: Math.floor(Math.abs(value.solarVoltage * value.solarCurrent)),
+    
+                        InverterVoltage: Math.floor(Math.abs(value.inverterVoltage)),
+                        InverterCurrent: Math.abs(value.inverterCurrent).toFixed(2),
+                        InverterPower: Math.floor(Math.abs(value.inverterVoltage * value.inverterCurrent)),
+    
+                        GridVoltage: Math.floor(Math.abs(value.gridVoltage)),
+                        GridCurrent: Math.abs(value.gridCurrent).toFixed(2),
+                        GridPower: Math.floor(Math.abs(value.gridVoltage * value.gridCurrent)),
+    
+                        BatteryVoltage: Math.floor(Math.abs(value.batteryVoltage)),
+                        BatteryCurrent: Math.abs(value.batteryCurrent).toFixed(2),
+                        BatteryPower: Math.floor(Math.abs(value.batteryVoltage * value.batteryCurrent)),
+                    };
+                });
+    
+                if (timeCount > 0) {
+                    p1ValueTot += p1Value;
+                    p2ValueTot += p2Value ;
+                    p3ValueTot += p3Value ;
+                }
+  
+                p1ValueTot = p1ValueTot .toFixed(2); // Solar Generation
+                p2ValueTot = p2ValueTot .toFixed(2); // Grid Energy
+                p3ValueTot = p3ValueTot .toFixed(2); // Load Consumption
+   
+                res.status(200).json({
+                    message: 'Data processed successfully',
+                    data: {
+                        caldate,
+                        snapshot,
+                        dataCharts,
+                        p1ValueTot,
+                        p2ValueTot,
+                        p3ValueTot,
+                    }
+                });
+            } else {
+                res.status(400);
+                next({ message: "value is empty" });
+            }
+        } catch (error) {
+            res.status(500);
+            next(error);
+        }
+    }
 
 const getValDate = async (req, res, next) => {
     try{

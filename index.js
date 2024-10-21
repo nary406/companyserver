@@ -27,7 +27,7 @@ expressApp.use(cors(corsOptions));
 
 expressApp.options('*', cors(corsOptions));
 
-expressApp.use('/', require('./routes/userRoutes'));
+expressApp.use('/', require('./routes/userRoutes')); 
 expressApp.use('/admin', require('./routes/dataRoutes'));
 
 expressApp.use(errorHandler);
