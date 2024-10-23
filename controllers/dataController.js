@@ -172,22 +172,24 @@ const getDate = async (req, res, next) => {
 
                 axisValueCount++;
 
-                if (axisValueCount > 10) {
-                    myArray1.push(Math.abs(value.val().solarVoltage));
-                    myArray2.push(Math.abs(value.val().solarCurrent));
-                    myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent));
+              
+    if (axisValueCount > 10) {
+        // Apply isNaN to prevent NaN values in arrays
+        myArray1.push(Math.abs(value.val().solarVoltage) || 0);
+        myArray2.push(Math.abs(value.val().solarCurrent) || 0);
+        myArray3.push(Math.abs(value.val().solarVoltage * value.val().solarCurrent) || 0);
 
-                    myArray4.push(Math.abs(value.val().inverterVoltage));
-                    myArray5.push(Math.abs(value.val().inverterCurrent));
-                    myArray6.push(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent));
+        myArray4.push(Math.abs(value.val().inverterVoltage) || 0);
+        myArray5.push(Math.abs(value.val().inverterCurrent) || 0);
+        myArray6.push(Math.abs(value.val().inverterVoltage * value.val().inverterCurrent) || 0);
 
-                    myArray7.push(Math.abs(value.val().gridVoltage));
-                    myArray8.push(Math.abs(value.val().gridCurrent));
-                    myArray9.push(Math.abs(value.val().gridVoltage * value.val().gridCurrent));
+        myArray7.push(Math.abs(value.val().gridVoltage) || 0);
+        myArray8.push(Math.abs(value.val().gridCurrent) || 0);
+        myArray9.push(Math.abs(value.val().gridVoltage * value.val().gridCurrent) || 0);
 
-                    myArray10.push(Math.abs(value.val().batteryVoltage));
-                    myArray11.push(Math.abs(value.val().batteryCurrent));
-                    myArray12.push(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent));
+        myArray10.push(Math.abs(value.val().batteryVoltage) || 0);
+        myArray11.push(Math.abs(value.val().batteryCurrent) || 0);
+        myArray12.push(Math.abs(value.val().batteryVoltage * value.val().batteryCurrent) || 0);
 
                     let sum1 = 0;
                     let sum2 = 0;
@@ -203,7 +205,7 @@ const getDate = async (req, res, next) => {
                     let sum12 = 0;
 
                     for (let i = iterVal; i < iterVal + 10; i++) {
-                        sum1 += myArray1[i];
+                        sum1 += myArray1[i]||0;
                         sum2 += myArray2[i];
                         sum3 += myArray3[i];
                         sum4 += myArray4[i];
@@ -221,21 +223,21 @@ const getDate = async (req, res, next) => {
 
                 return {
                     ccAxisXValue: dateForGraphVal,
-                    SolarVoltage: Math.abs(value.val().solarVoltage).toFixed(2),
-                    SolarCurrent: Math.abs(value.val().solarCurrent).toFixed(2),
-                    SolarPower: Math.abs(value.val().solarVoltage * value.val().solarCurrent).toFixed(2),
-
-                    InverterVoltage: (Math.abs(value.val().inverterVoltage)).toFixed(2),
-                    InverterCurrent: Math.abs(value.val().inverterCurrent).toFixed(2),
-                    InverterPower: (Math.abs(value.val().inverterVoltage * value.val().inverterCurrent)).toFixed(2),
-
-                    GridVoltage: (Math.abs(value.val().gridVoltage)).toFixed(2),
-                    GridCurrent: Math.abs(value.val().gridCurrent).toFixed(2),
-                    GridPower: (Math.abs(value.val().gridVoltage * value.val().gridCurrent)).toFixed(2),
-
-                    BatteryVoltage: (Math.abs(value.val().batteryVoltage)).toFixed(2),
-                    BatteryCurrent: Math.abs(value.val().batteryCurrent),
-                    BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2)
+                    SolarVoltage: (isNaN(value?.val()?.solarVoltage) ? 0 : Math.abs(value?.val()?.solarVoltage)).toFixed(2),
+                    SolarCurrent: (isNaN(value?.val()?.solarCurrent) ? 0 : Math.abs(value?.val()?.solarCurrent)).toFixed(2),
+                    SolarPower: (isNaN(value?.val()?.solarVoltage * value?.val()?.solarCurrent) ? 0 : Math.abs(value?.val()?.solarVoltage * value?.val()?.solarCurrent)).toFixed(2),
+            
+                    InverterVoltage: (isNaN(value?.val()?.inverterVoltage) ? 0 : Math.abs(value?.val()?.inverterVoltage)).toFixed(2),
+                    InverterCurrent: (isNaN(value?.val()?.inverterCurrent) ? 0 : Math.abs(value?.val()?.inverterCurrent)).toFixed(2),
+                    InverterPower: (isNaN(value?.val()?.inverterVoltage * value?.val()?.inverterCurrent) ? 0 : Math.abs(value?.val()?.inverterVoltage * value?.val()?.inverterCurrent)).toFixed(2),
+            
+                    GridVoltage: (isNaN(value?.val()?.gridVoltage) ? 0 : Math.abs(value?.val()?.gridVoltage)).toFixed(2),
+                    GridCurrent: (isNaN(value?.val()?.gridCurrent) ? 0 : Math.abs(value?.val()?.gridCurrent)).toFixed(2),
+                    GridPower: (isNaN(value?.val()?.gridVoltage * value?.val()?.gridCurrent) ? 0 : Math.abs(value?.val()?.gridVoltage * value?.val()?.gridCurrent)).toFixed(2),
+            
+                    BatteryVoltage: (isNaN(value?.val()?.batteryVoltage) ? 0 : Math.abs(value?.val()?.batteryVoltage)).toFixed(2),
+                    BatteryCurrent: (isNaN(value?.val()?.batteryCurrent) ? 0 : Math.abs(value?.val()?.batteryCurrent)),
+                    BatteryPower: (isNaN(value?.val()?.batteryVoltage * value?.val()?.batteryCurrent) ? 0 : Math.abs(value?.val()?.batteryVoltage * value?.val()?.batteryCurrent)).toFixed(2)
                 };
             });
 
