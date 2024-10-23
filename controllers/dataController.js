@@ -118,7 +118,7 @@ const getDate = async (req, res, next) => {
             const curr = new Date(date);
            
             const dateOrg = curr.toISOString().substring(0, 10);
-console.log(dateOrg)
+
 
             const uniValue = Math.floor(new Date(dateOrg).getTime() / 1000) - 19800;
        
@@ -137,7 +137,7 @@ console.log(dateOrg)
                     records.push(childSnapshot);
                 }
             });
-            console.log(records)
+        
             let axisValueCount = 0;
             const myArray1 = [];
             const myArray2 = [];
@@ -238,7 +238,18 @@ console.log(dateOrg)
                     BatteryPower: (Math.abs(value.val().batteryVoltage * value.val().batteryCurrent)).toFixed(2)
                 };
             });
-            res.status(200).json({ message: 'Data processed successfully', data: {dataCharts,records } });
+
+            let timeDelta
+            if (mail === "rmsv35_003") {
+                timeDelta = 1;
+                console.log("vadalur");
+            } else if (mail.startsWith("rmsv35")) {
+                timeDelta = 5; // Set for other devices starting with "rmsv35"
+            } else {
+                timeDelta = 1; // Default for all other devices
+            }
+            
+            res.status(200).json({ message: 'Data processed successfully', data: {dataCharts, timeDelta } });
         } else {
             res.status(400);
             next({ message: "Either values are empty" });
@@ -299,6 +310,7 @@ const postDB = async (req, res, next) => {
                 const p1Values = [];
                 const p2Values = [];
                 const p3Values = [];
+    const timeValues = [];
                 
   
     let timeInterval
