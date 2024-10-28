@@ -98,7 +98,9 @@ const getAlldevices = async (req, res, next) => {
             const t = Math.ceil(Date.now() / 1000);
             const workingDevices = results.filter(result => result.record === true && Math.abs(result.additionalData.tValue - t) <= 1800);
             const notWorkingDevices = results.filter(result => result.record === false || Math.abs(result.additionalData.tValue - t) > 1800);
+            console.timeEnd("Total Processing Timer");
             res.status(200).json({ message: "Successful", data: { workingDevices, notWorkingDevices } });
+            
         });
     } catch (error) {
         console.error("Error:", error);
